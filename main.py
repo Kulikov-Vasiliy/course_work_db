@@ -1,5 +1,7 @@
 # Функция для взаимодействия с пользователем
 import requests
+import psycopg2
+from src.config import config
 from src.api_class import HeadHunterAPI
 from src.json_class import DATA_PATH, JSONSaver
 from src.utils import (
@@ -10,6 +12,8 @@ from src.utils import (
     sort_vacancies,
 )
 from src.vacancy import Vacancy
+from src.class_DBManager import DBManager
+from src.connect_db import create_database, create_tables
 
 path_file = DATA_PATH
 
@@ -65,6 +69,37 @@ def user_interaction() -> None:
         json_saver.add_vacancy(vacancies_list)
         json_saver.delete_vacancy(vacancies_list)
 
+        # Обработка информации через бд
+        # 1. Получаем параметры из .ini (там обычно база 'postgres' или 'python_cw')
+        conn_params = config()
+        target_db = "python_cw"
+
+        # 2. Создаем БД
+        # Передаем params, но внутри create_database нужно подключиться к 'postgres'
+        create_database(target_db, conn_params)
+
+        # 3. Обновляем параметры подключения, чтобы работать с НОВОЙ базой
+        conn_params['database'] = target_db
+
+        # 4. Создаем таблицы в новой базе
+        # Теперь передаем обновленные параметры
+        create_tables(target_db, conn_params)
+
+        # # 3. Инициализируем класс для работы с БД
+        # # Лучше передавать параметры в init, чтобы класс сам управлял соединением
+        # db_manager = DBManager(params)
+        #
+        # try:
+        #     # Пример работы: вставка данных или запрос
+        #     db_manager.insert_vacancy_data(...)
+        #
+        #     vacancies = db_manager.get_all_vacancies()
+        #     for v in vacancies:
+        #         print(v)
+        #
+        # finally:
+        #     # Важно закрыть общее соединение, если оно хранится в классе
+        #     db_manager.close_connection()
 
 if __name__ == "__main__":
     user_interaction()

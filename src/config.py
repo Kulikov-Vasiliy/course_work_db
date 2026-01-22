@@ -1,7 +1,11 @@
 from configparser import ConfigParser
+import os
 
 
 def config(filename="database.ini", section="postgresql"):
+    # ПРОВЕРКА: существует ли файл физически?
+    if not os.path.exists(filename):
+        raise FileNotFoundError(f"Файл {filename} не найден по пути: {os.path.abspath(filename)}")
     # create a parser
     parser = ConfigParser()
     # read config file
@@ -13,5 +17,6 @@ def config(filename="database.ini", section="postgresql"):
             db[param[0]] = param[1]
     else:
         raise Exception(
-            f'Section {0} is not found in the {1} file.')
+            f'Section {section} is not found in the {filename} file.'
+        )
     return db

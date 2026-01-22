@@ -65,3 +65,23 @@ def temp_json_saver(tmp_path):
     test_file: pathlib.Path = tmp_path / "test_vacancies.json"
     saver = JSONSaver(filename=test_file)
     return saver
+
+
+# Фикстура для создания временного конфигурационного файла
+@pytest.fixture
+def create_ini_file(tmp_path):
+    d = tmp_path / "test_subdir"
+    d.mkdir()
+    ini_file = d / "test_database.ini"
+    content = """
+[postgresql]
+host=localhost
+user=postgres
+password=secret
+port=5432
+
+[other_section]
+key=value
+    """
+    ini_file.write_text(content)
+    return str(ini_file)
