@@ -24,7 +24,7 @@ class DBManager:
             # Заполнение данными
             for n in wanted:
                 cur.execute("""
-                INSERT INTO Companies(
+                INSERT INTO companies (
                 company_id, company_name, company_url
                 )
                 VALUES(%s, %s, %s)
@@ -34,7 +34,7 @@ class DBManager:
                 ))
 
                 cur.execute("""
-                INSERT INTO Vacancies(
+                INSERT INTO vacancies (
                 company_id, vacancy_title,
                 vacancy_url, vacancy_salary_from,
                 vacancy_salary_to,  currency,
@@ -50,17 +50,16 @@ class DBManager:
                     n["experience"], n["employment"], n["employment_form"]
                 ))
         conn.commit()
-        # conn.close()
 
     def get_companies_and_vacancies_count(self):
         """Метод получает список всех компаний и количество вакансий у каждой компании"""
         with psycopg2.connect(**self.params) as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    SELECT DISTINCT Companies.company_name, COUNT(Vacancies.vacancy_title)
-                    FROM Companies
-                    LEFT JOIN Vacancies ON Companies.company_id = Vacancies.company_id
-                    GROUP BY Companies.company_name
+                    SELECT DISTINCT companies.company_name, COUNT(vacancies.vacancy_title)
+                    FROM companies
+                    LEFT JOIN vacancies ON companies.company_id = vacancies.company_id
+                    GROUP BY companies.company_name
                 """)
                 # conn.commit()
 

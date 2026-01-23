@@ -43,13 +43,13 @@ def create_tables(conn_params: dict) -> None:
         # Создание курсора
         with conn.cursor() as cur:
             # Выполнение команды создания таблиц
-            cur.execute("""CREATE TABLE IF NOT EXISTS Companies(
+            cur.execute("""CREATE TABLE IF NOT EXISTS Companies (
             company_id text PRIMARY KEY,
             company_name text NOT NULL,
             company_url text NOT NULL
             );""")
 
-            cur.execute("""CREATE TABLE IF NOT EXISTS Vacancies(
+            cur.execute("""CREATE TABLE IF NOT EXISTS Vacancies (
             vacancy_num serial,
             company_id text REFERENCES Companies(company_id) NOT NULL,
             vacancy_title text NOT NULL,

@@ -90,7 +90,7 @@ def user_interaction() -> None:
         # db_manager.adding_info_in_table()
         db_test = db_manager.get_companies_and_vacancies_count()
         for v in db_test:
-            print(v)
+            print(f'{v[0]}: {v[1]}')
         #
         # try:
         #     # Пример работы: вставка данных или запрос
