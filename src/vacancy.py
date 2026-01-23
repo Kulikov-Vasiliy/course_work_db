@@ -21,7 +21,6 @@ class Vacancy:
 
     @staticmethod
     def cast_to_object_list(wanted: list[dict]) -> list:
-        print(wanted)
         vacancies_list = []
         for item in wanted:
             if item:

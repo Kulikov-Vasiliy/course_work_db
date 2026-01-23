@@ -71,23 +71,26 @@ def user_interaction() -> None:
 
         # Обработка информации через бд
         # 1. Получаем параметры из .ini (там обычно база 'postgres' или 'python_cw')
-        conn_params = config()
+        params = config()
         target_db = "python_cw"
 
         # 2. Создаем БД
         # Передаем params, но внутри create_database нужно подключиться к 'postgres'
-        create_database(target_db, conn_params)
+        create_database(target_db, params)
 
         # 3. Обновляем параметры подключения, чтобы работать с НОВОЙ базой
-        conn_params['database'] = target_db
+        params['database'] = target_db
 
         # 4. Создаем таблицы в новой базе
         # Теперь передаем обновленные параметры
-        create_tables(target_db, conn_params)
+        create_tables(params)
 
-        # # 3. Инициализируем класс для работы с БД
-        # # Лучше передавать параметры в init, чтобы класс сам управлял соединением
-        # db_manager = DBManager(params)
+        # 5.  Инициализируем класс для работы с БД
+        db_manager = DBManager(params)
+        # db_manager.adding_info_in_table()
+        db_test = db_manager.get_companies_and_vacancies_count()
+        for v in db_test:
+            print(v)
         #
         # try:
         #     # Пример работы: вставка данных или запрос
