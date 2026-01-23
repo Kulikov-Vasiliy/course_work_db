@@ -71,22 +71,51 @@ class DBManager:
         with psycopg2.connect(**self.params) as conn:
             with conn.cursor() as cur:
 
-                cur.execute("""SELECT * FROM Компании""")
-                # cur.execute("""SELECT * FROM Вакансии""")
+                cur.execute("""SELECT DISTINCT companies.company_name, vacancies.vacancy_title,
+                vacancies.vacancy_salary_from, vacancies.vacancy_salary_to, vacancies.currency,
+                vacancies.vacancy_url FROM companies
+                LEFT JOIN vacancies ON companies.company_id = vacancies.company_id
+                WHERE vacancies.vacancy_salary_from IS NOT NULL AND
+                vacancies.vacancy_salary_to IS NOT NULL
+                ORDER BY companies.company_name
+                """)
                 conn.commit()
 
-        conn.close()
-
+                return cur.fetchall()
 
     def get_avg_salary(self):
         """Метод получает среднюю зарплату по вакансиям"""
-        pass
+        with psycopg2.connect(**self.params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT DISTINCT companies.company_name, AVG(vacancies.vacancy_salary_from) AS avg_from,
+                       AVG(vacancies.vacancy_salary_to) AS avg_to, vacancies.currency
+                       FROM companies
+                       LEFT JOIN vacancies ON companies.company_id = vacancies.company_id
+                       WHERE vacancies.vacancy_salary_from IS NOT NULL OR
+                       vacancies.vacancy_salary_to IS NOT NULL
+                       ORDER BY companies.company_name
+                       """)
+                conn.commit()
+
+                return cur.fetchall()
 
 
     def get_vacancies_with_higher_salary(self):
         """Метод получает список всех вакансий, у которых зарплата выше средней
          по всем вакансиям"""
-        pass
+        with psycopg2.connect(**self.params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT DISTINCT companies.company_name, vacancies.vacancy_title
+                    FROM companies
+                    JOIN vacancies ON companies.company_id = vacancies.company_id
+                    WHERE vacancies.vacancy_salary_from AND vacancies.vacancy_salary_to IS NOT NULL
+                    AND vacancies.vacancy_salary_from > AVG(vacancies.vacancy_salary_from)
+                    OR vacancies.vacancy_salary_to > AVG(vacancies.vacancy_salary_to)
+                    ORDER BY companies.company_name
+                """)
+                conn.commit()
+
+                return cur.fetchall()
 
 
     def get_vacancies_with_keyword(self):

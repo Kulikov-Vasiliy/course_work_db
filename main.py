@@ -1,6 +1,5 @@
 # Функция для взаимодействия с пользователем
 import requests
-import psycopg2
 from src.config import config
 from src.api_class import HeadHunterAPI
 from src.json_class import DATA_PATH, JSONSaver
@@ -88,9 +87,18 @@ def user_interaction() -> None:
         # 5.  Инициализируем класс для работы с БД
         db_manager = DBManager(params)
         # db_manager.adding_info_in_table()
-        db_test = db_manager.get_companies_and_vacancies_count()
-        for v in db_test:
-            print(f'{v[0]}: {v[1]}')
+        db_count = db_manager.get_companies_and_vacancies_count()
+        for v in db_count:
+            print(f'Компании: {v[0]}, всего вакансий: {v[1]}')
+
+        db_all = db_manager.get_all_vacancies()
+        for v in db_all:
+            print(f"""
+В компании {v[0]}:
+  * вакансия: {v[1]}, 
+  * зп: {v[2]} - {v[3]} {v[4]}, 
+  * ссылка на вакансию: {v[5]}
+""")
         #
         # try:
         #     # Пример работы: вставка данных или запрос
@@ -103,6 +111,7 @@ def user_interaction() -> None:
         # finally:
         #     # Важно закрыть общее соединение, если оно хранится в классе
         #     db_manager.close_connection()
+
 
 if __name__ == "__main__":
     user_interaction()
