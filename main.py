@@ -1,4 +1,5 @@
 # Функция для взаимодействия с пользователем
+import psycopg2
 import requests
 from src.config import config
 from src.api_class import HeadHunterAPI
@@ -86,32 +87,65 @@ def user_interaction() -> None:
 
         # 5.  Инициализируем класс для работы с БД
         db_manager = DBManager(params)
-        # db_manager.adding_info_in_table()
-        db_count = db_manager.get_companies_and_vacancies_count()
-        for v in db_count:
-            print(f'Компании: {v[0]}, всего вакансий: {v[1]}')
+        hh_vacancies_per_employer = hh_api.vacancies_per_company()
+        db_manager.adding_info_in_table(hh_vacancies_per_employer)
 
-        db_all = db_manager.get_all_vacancies()
-        for v in db_all:
-            print(f"""
-В компании {v[0]}:
-  * вакансия: {v[1]}, 
-  * зп: {v[2]} - {v[3]} {v[4]}, 
-  * ссылка на вакансию: {v[5]}
+        try:
+            # # код для поиска возникшей ошибки
+            # print("Проверка 1: count")
+            # db_count = db_manager.get_companies_and_vacancies_count()
+            #
+            # print("Проверка 2: all")
+            # db_all = db_manager.get_all_vacancies()
+            #
+            # print("Проверка 3: avg")
+            # db_avg = db_manager.get_a
+            #
+            # print("Проверка 4: high")
+            # db_avg = db_manager.get_vacancies_with_higher_salary()
+
+            # print("Проверка 5: word")
+            # db_avg = db_manager.get_vacancies_with_keyword(filter_words)
+
+            # рабочий код:
+            db_count = db_manager.get_companies_and_vacancies_count()
+            for row in db_count:
+                print(f"Компании: {row[0]}, всего вакансий: {row[1]}")
+
+            db_all = db_manager.get_all_vacancies()
+            for row in db_all:
+                print(f"""
+В компании {row[0]}:
+  * вакансия: {row[1]},
+  * зп: {row[2]} - {row[3]} {row[4]},
+  * ссылка на вакансию: {row[5]}
 """)
-        #
-        # try:
-        #     # Пример работы: вставка данных или запрос
-        #     db_manager.insert_vacancy_data(...)
-        #
-        #     vacancies = db_manager.get_all_vacancies()
-        #     for v in vacancies:
-        #         print(v)
-        #
-        # finally:
-        #     # Важно закрыть общее соединение, если оно хранится в классе
-        #     db_manager.close_connection()
+            db_avg = db_manager.get_avg_salary()
+            for row in db_avg:
+                print(
+                    f"Средняя зп в компании {row[0]}: {row[1]:.2f} - {row[2]:.2f} {row[3]}"
+                )
+            db_high = db_manager.get_vacancies_with_higher_salary()
+            for v in db_high:
+                print(f"Компания: {v[0]}, Вакансия: {v[1]}")
 
+            db_keyword = db_manager.get_vacancies_with_keyword(filter_words)
+            for v in db_keyword:
+                print("По запросу найдены вакансии")
+                print(f"  * {v}")  # вакансии, содержащие искомые слова
+                # из замены пользовательского ввода не попали таблицу
+
+        except psycopg2.Error as e:
+            print("--- Ошибка базы данных ---")
+            print(f"Сообщение: {e.pgerror}")      # Полный текст ошибки от PostgreSQL
+            print(f"Код ошибки: {e.pgcode}")      # Код (например, '42P01' для UndefinedTable)
+            # Диагностика (особенно полезно при UndefinedColumn)
+            if e.diag.message_primary:
+                print(f"Суть: {e.diag.message_primary}")
+                print(f"Где именно: {e.diag.column_name or 'не указано'}")
+        except Exception as e:
+            print(f"Тип ошибки: {type(e)}")
+            print(f"Текст ошибки: {e}")
 
 if __name__ == "__main__":
     user_interaction()

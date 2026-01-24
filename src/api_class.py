@@ -45,6 +45,10 @@ class AbstractAPI(ABC):
     def get_vacancies(self):  # type: ignore[no-untyped-def]
         return self.__get_vacancies()
 
+    @abstractmethod
+    def vacancies_per_company(self):  # type: ignore[no-untyped-def]
+        return self.__vacancies_per_company()
+
 
 class HeadHunterAPI(AbstractAPI):
     """
@@ -164,3 +168,83 @@ class HeadHunterAPI(AbstractAPI):
         if not wanted:
             return []
         return wanted
+
+    def vacancies_per_company(self, employer_ids: list=None) -> list[dict]:
+        """Получение вакансий по компании"""
+        per_company = []
+        __url = "https://api.hh.ru/vacancies"
+
+        # 1. Формируем параметры запроса
+        __payload = {
+            "only_with_salary": self.__only_with_salary,
+            "no_magic": self.__no_magic,
+            "per_page": 100  # Максимум за один запрос
+        }
+
+        # Если передали список ID компаний, добавляем их в фильтр
+        if employer_ids:
+            __payload["employer_id"] = employer_ids
+
+        try:
+            response = requests.get(__url, params=__payload)
+            response.raise_for_status()
+            result = response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка запроса: {e}")
+            return []
+
+        # 2. Обработка результатов (ВНЕ блока except!)
+        for item in result.get("items", []):
+            if not item:
+                continue
+
+            # Обработка зарплаты
+            salary_info = item.get("salary")
+            if salary_info:
+                salary_from = salary_info.get("from") or 0
+                salary_to = salary_info.get("to") or 0
+                currency = salary_info.get("currency") or ""
+            else:
+                salary_from, salary_to, currency = 0, 0, ""
+
+            # Обработка адреса
+            address_info = item.get("address") or {}
+            city = address_info.get("city", "Не указано")
+
+            # Обработка графика (working_days)
+            name_days = ""
+            work_days = item.get("work_schedule_by_days")
+            if work_days:
+                name_days = ", ".join([d.get("name", "") for d in work_days])
+
+            # Данные работодателя
+            emp = item.get("employer", {})
+
+            # Форма занятости (защита от None)
+            emp_form_obj = item.get("employment_form")
+            emp_form_name = emp_form_obj.get("name") if emp_form_obj else "Не указана"
+
+            per_company.append({
+                "title": item.get("name"),
+                "alternate_url": item.get("alternate_url"),  # ПРАВИЛЬНАЯ ссылка
+                "salary_from": salary_from,
+                "salary_to": salary_to,
+                "currency": currency,
+                "city": city,
+                "street": address_info.get("street", "Не указано"),
+                "building": address_info.get("building", "Не указано"),
+                "schedule": item.get("schedule", {}).get("name", "Не указано"),
+                "name": name_days,
+                "employer_id": emp.get("id"),
+                "employer_name": emp.get("name"),
+                "employer_url": emp.get("alternate_url"),  # Ссылка на компанию
+                "responsibility": item.get("snippet", {}).get("responsibility"),
+                "requirement": item.get("snippet", {}).get("requirement"),
+                "experience": item.get("experience", {}).get("name", "Не требуется"),
+                "employment": item.get("employment", {}).get("name", "Не указано"),
+                "employment_form": emp_form_name
+            })
+
+        if not per_company:
+            return []
+        return per_company
