@@ -1,8 +1,8 @@
-from configparser import ConfigParser
 import os
+from configparser import ConfigParser
 
 
-def config(filename="database.ini", section="postgresql"):
+def config(filename: str = "database.ini", section: str = "postgresql") -> dict:
     # ПРОВЕРКА: существует ли файл физически?
     if not os.path.exists(filename):
         raise FileNotFoundError(f"Файл {filename} не найден по пути: {os.path.abspath(filename)}")
@@ -16,7 +16,5 @@ def config(filename="database.ini", section="postgresql"):
         for param in params:
             db[param[0]] = param[1]
     else:
-        raise Exception(
-            f'Section {section} is not found in the {filename} file.'
-        )
+        raise Exception(f"Section {section} is not found in the {filename} file.")
     return db

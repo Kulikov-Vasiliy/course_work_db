@@ -169,7 +169,7 @@ class HeadHunterAPI(AbstractAPI):
             return []
         return wanted
 
-    def vacancies_per_company(self, employer_ids: list=None) -> list[dict]:
+    def vacancies_per_company(self, employer_ids: list = [None]) -> list[dict]:
         """Получение вакансий по компании"""
         per_company = []
         __url = "https://api.hh.ru/vacancies"
@@ -178,12 +178,12 @@ class HeadHunterAPI(AbstractAPI):
         __payload = {
             "only_with_salary": self.__only_with_salary,
             "no_magic": self.__no_magic,
-            "per_page": 100  # Максимум за один запрос
+            "per_page": 100,  # Максимум за один запрос
         }
 
         # Если передали список ID компаний, добавляем их в фильтр
         if employer_ids:
-            __payload["employer_id"] = employer_ids
+            __payload["employer_id"] = employer_ids  # type: ignore[assignment]
 
         try:
             response = requests.get(__url, params=__payload)
@@ -224,26 +224,28 @@ class HeadHunterAPI(AbstractAPI):
             emp_form_obj = item.get("employment_form")
             emp_form_name = emp_form_obj.get("name") if emp_form_obj else "Не указана"
 
-            per_company.append({
-                "title": item.get("name"),
-                "alternate_url": item.get("alternate_url"),  # ПРАВИЛЬНАЯ ссылка
-                "salary_from": salary_from,
-                "salary_to": salary_to,
-                "currency": currency,
-                "city": city,
-                "street": address_info.get("street", "Не указано"),
-                "building": address_info.get("building", "Не указано"),
-                "schedule": item.get("schedule", {}).get("name", "Не указано"),
-                "name": name_days,
-                "employer_id": emp.get("id"),
-                "employer_name": emp.get("name"),
-                "employer_url": emp.get("alternate_url"),  # Ссылка на компанию
-                "responsibility": item.get("snippet", {}).get("responsibility"),
-                "requirement": item.get("snippet", {}).get("requirement"),
-                "experience": item.get("experience", {}).get("name", "Не требуется"),
-                "employment": item.get("employment", {}).get("name", "Не указано"),
-                "employment_form": emp_form_name
-            })
+            per_company.append(
+                {
+                    "title": item.get("name"),
+                    "alternate_url": item.get("alternate_url"),  # ПРАВИЛЬНАЯ ссылка
+                    "salary_from": salary_from,
+                    "salary_to": salary_to,
+                    "currency": currency,
+                    "city": city,
+                    "street": address_info.get("street", "Не указано"),
+                    "building": address_info.get("building", "Не указано"),
+                    "schedule": item.get("schedule", {}).get("name", "Не указано"),
+                    "name": name_days,
+                    "employer_id": emp.get("id"),
+                    "employer_name": emp.get("name"),
+                    "employer_url": emp.get("alternate_url"),  # Ссылка на компанию
+                    "responsibility": item.get("snippet", {}).get("responsibility"),
+                    "requirement": item.get("snippet", {}).get("requirement"),
+                    "experience": item.get("experience", {}).get("name", "Не требуется"),
+                    "employment": item.get("employment", {}).get("name", "Не указано"),
+                    "employment_form": emp_form_name,
+                }
+            )
 
         if not per_company:
             return []

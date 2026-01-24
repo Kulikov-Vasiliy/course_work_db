@@ -7,10 +7,10 @@ def encode(params: dict) -> dict:
     print(f"Содержимое params: {params}")
 
     conn_params = params.copy()
-    if 'database' in conn_params:
-        del conn_params['database']
-    elif 'dbname' in conn_params:
-        del conn_params['dbname']
+    if "database" in conn_params:
+        del conn_params["database"]
+    elif "dbname" in conn_params:
+        del conn_params["dbname"]
 
     return conn_params
 
@@ -36,20 +36,23 @@ def create_database(database_name: str, conn_params: dict) -> None:
 
 
 def create_tables(conn_params: dict) -> None:
-    """ Создание таблиц для сохранения данных"""
+    """Создание таблиц для сохранения данных"""
     conn = psycopg2.connect(**conn_params)
 
     try:
         # Создание курсора
         with conn.cursor() as cur:
             # Выполнение команды создания таблиц
-            cur.execute("""CREATE TABLE IF NOT EXISTS Companies (
+            cur.execute(
+                """CREATE TABLE IF NOT EXISTS Companies (
             company_id text PRIMARY KEY,
             company_name text NOT NULL,
             company_url text NOT NULL
-            );""")
+            );"""
+            )
 
-            cur.execute("""CREATE TABLE IF NOT EXISTS Vacancies (
+            cur.execute(
+                """CREATE TABLE IF NOT EXISTS Vacancies (
             vacancy_num serial,
             company_id text REFERENCES Companies(company_id) NOT NULL,
             vacancy_title text NOT NULL,
@@ -67,7 +70,8 @@ def create_tables(conn_params: dict) -> None:
             experience text,
             employment text,
             employment_form text
-            );""")
+            );"""
+            )
         # Сохранение изменений (COMMIT)
         conn.commit()
         print("Таблицы успешно созданы")

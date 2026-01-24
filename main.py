@@ -1,8 +1,11 @@
 # Функция для взаимодействия с пользователем
 import psycopg2
 import requests
-from src.config import config
+
 from src.api_class import HeadHunterAPI
+from src.class_DBManager import DBManager
+from src.config import config
+from src.connect_db import create_database, create_tables
 from src.json_class import DATA_PATH, JSONSaver
 from src.utils import (
     filter_vacancies,
@@ -12,8 +15,6 @@ from src.utils import (
     sort_vacancies,
 )
 from src.vacancy import Vacancy
-from src.class_DBManager import DBManager
-from src.connect_db import create_database, create_tables
 
 path_file = DATA_PATH
 
@@ -79,7 +80,7 @@ def user_interaction() -> None:
         create_database(target_db, params)
 
         # 3. Обновляем параметры подключения, чтобы работать с НОВОЙ базой
-        params['database'] = target_db
+        params["database"] = target_db
 
         # 4. Создаем таблицы в новой базе
         # Теперь передаем обновленные параметры
@@ -114,17 +115,17 @@ def user_interaction() -> None:
 
             db_all = db_manager.get_all_vacancies()
             for row in db_all:
-                print(f"""
+                print(
+                    f"""
 В компании {row[0]}:
   * вакансия: {row[1]},
   * зп: {row[2]} - {row[3]} {row[4]},
   * ссылка на вакансию: {row[5]}
-""")
+"""
+                )
             db_avg = db_manager.get_avg_salary()
             for row in db_avg:
-                print(
-                    f"Средняя зп в компании {row[0]}: {row[1]:.2f} - {row[2]:.2f} {row[3]}"
-                )
+                print(f"Средняя зп в компании {row[0]}: {row[1]:.2f} - {row[2]:.2f} {row[3]}")
             db_high = db_manager.get_vacancies_with_higher_salary()
             for v in db_high:
                 print(f"Компания: {v[0]}, Вакансия: {v[1]}")
@@ -137,8 +138,8 @@ def user_interaction() -> None:
 
         except psycopg2.Error as e:
             print("--- Ошибка базы данных ---")
-            print(f"Сообщение: {e.pgerror}")      # Полный текст ошибки от PostgreSQL
-            print(f"Код ошибки: {e.pgcode}")      # Код (например, '42P01' для UndefinedTable)
+            print(f"Сообщение: {e.pgerror}")  # Полный текст ошибки от PostgreSQL
+            print(f"Код ошибки: {e.pgcode}")  # Код (например, '42P01' для UndefinedTable)
             # Диагностика (особенно полезно при UndefinedColumn)
             if e.diag.message_primary:
                 print(f"Суть: {e.diag.message_primary}")
@@ -146,6 +147,7 @@ def user_interaction() -> None:
         except Exception as e:
             print(f"Тип ошибки: {type(e)}")
             print(f"Текст ошибки: {e}")
+
 
 if __name__ == "__main__":
     user_interaction()
