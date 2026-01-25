@@ -141,6 +141,7 @@ class DBManager:
         """Метод получает список всех вакансий, в названии которых содержатся
         переданные в метод слова, например python."""
         words = f"%{filter_words.strip()}%"
+
         with psycopg2.connect(**self.params) as conn:
             with conn.cursor() as cur:
                 cur.execute(

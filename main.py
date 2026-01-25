@@ -28,7 +28,7 @@ def user_interaction() -> None:
     # top_n = int(input("Введите количество вакансий для вывода в топ N: "))
     top_n = 3
     # filter_words = input("Введите ключевые слова для фильтрации вакансий: ").split()
-    filter_words = "Python Django"
+    filter_words = "убор"
     # salary_range = input("Введите диапазон зарплат: ") # Пример: 100000 - 150000
     salary_range = "10000 - 300000"
 
@@ -132,9 +132,12 @@ def user_interaction() -> None:
 
             db_keyword = db_manager.get_vacancies_with_keyword(filter_words)
             for v in db_keyword:
-                print("По запросу найдены вакансии")
-                print(f"  * {v}")  # вакансии, содержащие искомые слова
-                # из замены пользовательского ввода не попали таблицу
+                if type(v) is not None:
+                    print("По запросу найдены вакансии:")
+                    print(f"  * {v}")  # вакансии, содержащие искомые слова
+                    # из замены пользовательского ввода не попали таблицу
+                elif type(v) is None:
+                    print("По вашему запросу вакансий в базе данных не найдено")
 
         except psycopg2.Error as e:
             print("--- Ошибка базы данных ---")
