@@ -4,6 +4,8 @@ import pytest
 
 from src.json_class import JSONSaver
 from src.vacancy import Vacancy
+from src.class_DBManager import DBManager
+from src.api_class import HeadHunterAPI
 
 
 @pytest.fixture
@@ -85,3 +87,30 @@ key=value
     """
     ini_file.write_text(content)
     return str(ini_file)
+
+
+@pytest.fixture
+def db_params():
+    return {"host": "localhost", "user": "test_user", "database": "test_db"}
+
+
+@pytest.fixture
+def manager(db_params):
+    return DBManager(db_params)
+
+
+@pytest.fixture
+def parser():
+    # Создаем экземпляр парсера.
+    # Предполагаем, что в __init__ задаются __only_with_salary и __no_magic
+    p = HHParser()
+    # Если это приватные атрибуты, для теста можно их установить вот так:
+    p._HHParser__only_with_salary = True
+    p._HHParser__no_magic = True
+    return p
+
+
+@pytest.fixture
+def hh_api():
+    """Фикстура для инициализации API с тестовыми параметрами"""
+    return HeadHunterAPI(search_query="python", only_with_salary=True)
