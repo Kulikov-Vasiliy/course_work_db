@@ -62,7 +62,7 @@ class JSONSaver(AbstractJSONSaver):
         self.__write_data(data)
 
     def get_vacancies(  # type: ignore[override]
-            self, criteria: Optional[Dict[str, Any]] = None
+        self, criteria: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
         # Этот метод возвращает list[dict] из файла, что корректно по логике
         data = self.__read_data()

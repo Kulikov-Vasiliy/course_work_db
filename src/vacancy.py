@@ -43,7 +43,7 @@ class Vacancy:
                         salary_to_str,
                         currency,
                         requirement,
-                        responsibility
+                        responsibility,
                     )
                 )
 
